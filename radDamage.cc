@@ -1,9 +1,9 @@
-#include "radDetectorConstruction.hh"
-#include "radPrimaryGeneratorAction.hh"
-#include "radRunAction.hh"
-#include "radEventAction.hh"
-#include "radSteppingAction.hh"
-#include "radMessenger.hh"
+#include "mscDetectorConstruction.hh"
+#include "mscPrimaryGeneratorAction.hh"
+#include "mscRunAction.hh"
+#include "mscEventAction.hh"
+#include "mscSteppingAction.hh"
+#include "mscMessenger.hh"
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
@@ -17,13 +17,13 @@
 #include "G4StepLimiterPhysics.hh"
 #endif
 
-#ifdef G4VIS_USE
+//#ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
-#endif
+//#endif
 
-#ifdef G4UI_USE
+//#ifdef G4UI_USE
 #include "G4UIExecutive.hh"
-#endif
+//#endif
 
 #include "G4PhysListFactory.hh"
 
@@ -34,7 +34,7 @@
 namespace {
   void PrintUsage() {
     G4cerr << " Usage: " << G4endl;
-    G4cerr << " rad [-m macro ] [-u UIsession]" << G4endl;
+    G4cerr << " msc [-m macro ] [-u UIsession]" << G4endl;
   }
 }
 
@@ -68,13 +68,13 @@ int main(int argc,char** argv)
   // Construct the default run manager
   G4RunManager * runManager = new G4RunManager;
 
-  radMessenger *radMess = new radMessenger();  
+  mscMessenger *mscMess = new mscMessenger();  
   
   // Set mandatory initialization classes
   //
-  radDetectorConstruction* detConstruction = new radDetectorConstruction();
+  mscDetectorConstruction* detConstruction = new mscDetectorConstruction();
   runManager->SetUserInitialization(detConstruction);
-  radMess->SetDetCon( detConstruction );
+  mscMess->SetDetCon( detConstruction );
 
   // Calls a reference physics list for the simulation
   G4PhysListFactory factory;
@@ -91,29 +91,29 @@ int main(int argc,char** argv)
   G4int evNumber(0);
 
   // Set user action classes
-  radPrimaryGeneratorAction *prigen=new radPrimaryGeneratorAction();
+  mscPrimaryGeneratorAction *prigen=new mscPrimaryGeneratorAction();
   runManager->SetUserAction( prigen );
-  radMess->SetPriGen(prigen);
+  mscMess->SetPriGen(prigen);
   //
-  runManager->SetUserAction(new radRunAction());
+  runManager->SetUserAction(new mscRunAction());
   //
-  runManager->SetUserAction(new radEventAction(&evNumber));
+  runManager->SetUserAction(new mscEventAction(&evNumber));
   //
-  radSteppingAction *stepAct=new radSteppingAction(&evNumber);
+  mscSteppingAction *stepAct=new mscSteppingAction(&evNumber);
   runManager->SetUserAction(stepAct);
-  radMess->SetStepAct(stepAct);
+  mscMess->SetStepAct(stepAct);
 
   // Initialize G4 kernel
   //
   runManager->Initialize();
   
-#ifdef G4VIS_USE
+//#ifdef G4VIS_USE
   // Initialize visualization
   G4VisManager* visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   // G4VisManager* visManager = new G4VisExecutive("Quiet");
   visManager->Initialize();
-#endif
+//#endif
 
   // Get the pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
@@ -125,22 +125,22 @@ int main(int argc,char** argv)
   }
   else  {  
     // interactive mode : define UI session
-#ifdef G4UI_USE
+//#ifdef G4UI_USE
     G4UIExecutive* ui = new G4UIExecutive(argc, argv, session);
-#ifdef G4VIS_USE
-    UImanager->ApplyCommand("/control/macroPath macros"); 
-    UImanager->ApplyCommand("/control/execute init_vis.mac"); 
-#else
-    UImanager->ApplyCommand("/control/macroPath macros"); 
-    UImanager->ApplyCommand("/control/execute init.mac"); 
-#endif
+//#ifdef G4VIS_USE
+//    UImanager->ApplyCommand("/control/macroPath macros"); 
+ //   UImanager->ApplyCommand("/control/execute init_vis.mac"); 
+//#else
+//    UImanager->ApplyCommand("/control/macroPath macros"); 
+//    UImanager->ApplyCommand("/control/execute init.mac"); 
+//#endif
     if (ui->IsGUI()){
       UImanager->ApplyCommand("/control/macroPath macros"); 
       UImanager->ApplyCommand("/control/execute gui.mac");
     }
     ui->SessionStart();
     delete ui;
-#endif
+//#endif
   }
 
   // Job termination
@@ -148,9 +148,9 @@ int main(int argc,char** argv)
   // owned and deleted by the run manager, so they should not be deleted 
   // in the main() program !
 
-#ifdef G4VIS_USE
+//#ifdef G4VIS_USE
   delete visManager;
-#endif
+//#endif
   delete runManager;
 
   G4cout<<" Running time[s]: "<< (double) ((clock() - tStart)/CLOCKS_PER_SEC)<<G4endl;

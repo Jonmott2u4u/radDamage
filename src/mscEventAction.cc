@@ -1,4 +1,4 @@
-#include "radEventAction.hh"
+#include "mscEventAction.hh"
 
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
@@ -10,16 +10,16 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-radEventAction::radEventAction(G4int *evN)
+mscEventAction::mscEventAction(G4int *evN)
  : G4UserEventAction(),
    fMessenger(0),
    fPrintModulo(1)
 {
   evNr=evN;
-  // Define /rad/event commands using generic messenger class
-  fMessenger = new G4GenericMessenger(this, "/rad/event/", "Event control");
+  // Define /msc/event commands using generic messenger class
+  fMessenger = new G4GenericMessenger(this, "/msc/event/", "Event control");
 
-  // Define /rad/event/setPrintModulo command
+  // Define /msc/event/setPrintModulo command
   G4GenericMessenger::Command& setPrintModulo 
     = fMessenger->DeclareProperty("setPrintModulo", 
                                   fPrintModulo, 
@@ -29,14 +29,14 @@ radEventAction::radEventAction(G4int *evN)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-radEventAction::~radEventAction()
+mscEventAction::~mscEventAction()
 {
   delete fMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void radEventAction::BeginOfEventAction(const G4Event* event)
+void mscEventAction::BeginOfEventAction(const G4Event* event)
 {  
   G4int eventID = event->GetEventID();
   *evNr = eventID;
@@ -49,7 +49,7 @@ void radEventAction::BeginOfEventAction(const G4Event* event)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
-void radEventAction::EndOfEventAction(const G4Event* event)
+void mscEventAction::EndOfEventAction(const G4Event* event)
 {   
 
   G4int eventID = event->GetEventID();

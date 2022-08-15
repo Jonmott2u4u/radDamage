@@ -1,0 +1,8 @@
+/msc/event/setPrintModulo 10000
+/msc/det/setTargetMaterial G4_W
+/msc/det/setTargetMaterial2 G4_Pb
+/msc/det/setTargetLength 6 cm
+/msc/det/setTargetLength2 5.04 cm
+/msc/det/updateGeometry
+/msc/step/setOutFileName o_tranRef_jon_tst.root
+/run/beamOn 10000

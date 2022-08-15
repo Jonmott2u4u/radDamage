@@ -1,4 +1,4 @@
-#include "radRunAction.hh"
+#include "mscRunAction.hh"
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
@@ -7,20 +7,20 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-radRunAction::radRunAction()
+mscRunAction::mscRunAction()
  : G4UserRunAction()
 { 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-radRunAction::~radRunAction()
+mscRunAction::~mscRunAction()
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void radRunAction::BeginOfRunAction(const G4Run* run)
+void mscRunAction::BeginOfRunAction(const G4Run* run)
 { 
   G4cout << "### Run " << run->GetRunID() << " start." << G4endl;
 
@@ -33,7 +33,7 @@ void radRunAction::BeginOfRunAction(const G4Run* run)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void radRunAction::EndOfRunAction(const G4Run* run)
+void mscRunAction::EndOfRunAction(const G4Run* run)
 {
 
   G4cout << "### Run " << run->GetRunID() << " stop." << G4endl;

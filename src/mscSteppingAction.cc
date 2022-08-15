@@ -1,4 +1,4 @@
-#include "radSteppingAction.hh"
+#include "mscSteppingAction.hh"
 
 #include "G4SteppingManager.hh"
 #include "G4Track.hh"
@@ -11,22 +11,24 @@
 
 #include <fstream>
 
-radSteppingAction::radSteppingAction(G4int *evN)
+mscSteppingAction::mscSteppingAction(G4int *evN)
+  :foutName("o_radTree.root")
 {
-  //eventID pointer from the radEventAction.cc file
+  //eventID pointer from the mscEventAction.cc file
   evNr=evN;
-  InitOutput();
 }
 
-void  radSteppingAction::InitOutput(){
+void  mscSteppingAction::InitOutput(){
 
   /*Create root file and initialize what I want to put in it*/
-  fout=new TFile("o_radTree.root","RECREATE");
+  
+  fout=new TFile(foutName.c_str(),"RECREATE");
 
   tout=new TTree("t","Stepping action event tree");
     
   tout->Branch("evNr",&eventNr,"evNr/I");
   tout->Branch("material",&material,"material/I");
+  tout->Branch("material2",&material2,"material2/I");
   tout->Branch("pType",&pType,"pType/I");
   tout->Branch("trackID",&trackID,"trackID/I");
   tout->Branch("parentID",&parentID,"parentID/I");
@@ -41,15 +43,11 @@ void  radSteppingAction::InitOutput(){
   tout->Branch("preMomX", &preMomX, "preMomX/D");
   tout->Branch("preMomY", &preMomY, "preMomY/D");
   tout->Branch("preMomZ", &preMomZ, "preMomZ/D");
-
-  tout->Branch("neilVal", &neilVal, "neilVal/D");
-  tout->Branch("mremVal", &mremVal, "mremVal/D");
-  tout->Branch("normCosAng", &normCosAng, "normCosAng/D");
   
 }
 
 
-radSteppingAction::~radSteppingAction()
+mscSteppingAction::~mscSteppingAction()
 {
   /*Write out root file*/
   fout->cd();
@@ -58,7 +56,7 @@ radSteppingAction::~radSteppingAction()
 }
 
 
-void radSteppingAction::UserSteppingAction(const G4Step* theStep)
+void mscSteppingAction::UserSteppingAction(const G4Step* theStep)
 {
   G4Track*              theTrack     = theStep->GetTrack();
   G4ParticleDefinition* particleType = theTrack->GetDefinition();
@@ -66,11 +64,16 @@ void radSteppingAction::UserSteppingAction(const G4Step* theStep)
   G4StepPoint*          thePostPoint = theStep->GetPostStepPoint();
   G4String              particleName = theTrack->GetDefinition()->GetParticleName();
 
-  //get material
+  //get materials
   G4Material* theMaterial = theTrack->GetMaterial();
+  G4Material* theMaterial2 = theTrack->GetMaterial();
   G4ThreeVector _polarization=theTrack->GetPolarization();
   G4String _pn=thePostPoint->GetProcessDefinedStep()->GetProcessName();
 
+  if(fout==NULL){
+    InitOutput();
+  }
+  
   InitVar();  
   
   eventNr=*evNr;
@@ -78,28 +81,27 @@ void radSteppingAction::UserSteppingAction(const G4Step* theStep)
     currentEv=eventNr;
   }
 
-  int fillTree=0;
+  int fillTree=1;
   
   if(theMaterial){    
-    if(theMaterial->GetName().compare("Galactic")==0){
-      material=1;
-      fillTree=1;
-    }else if(theMaterial->GetName().compare("G4_W")==0 ||
+    if(theMaterial->GetName().compare("Galactic")==0)    material=1;
+    else if(theMaterial->GetName().compare("G4_W")==0 ||
 	    theMaterial->GetName().compare("G4_Cu")==0 ||
+	    theMaterial->GetName().compare("G4_POLYETHYLENE")==0 ||
+	    theMaterial->GetName().compare("G4_Fe")==0 ||
 	    theMaterial->GetName().compare("G4_Pb")==0){
       material=0;
-      fillTree=0;
-    }else fillTree=0;
+    }
 
     std::string volNm = thePrePoint->GetTouchableHandle()->GetVolume()->GetName();
-    if(volNm.compare(0,6,"detOut")==0){
-      detID = 200 + std::atoi(volNm.substr(7).c_str());
-    }else if(volNm.compare(0,11,"detUpStream")==0){
-      detID = 100 + std::atoi(volNm.substr(12).c_str());
-    }else if(volNm.compare(0,11,"detDnStream")==0){
-      detID = 300 + std::atoi(volNm.substr(12).c_str());
+    if(volNm.compare("detUS_PV")==0){
+      detID = 0;
+    }else if(volNm.compare("detDS_PV")==0){
+      detID = 1;
+    }else{
+      fillTree=0;
     }
-    
+
     pType = particleType->GetPDGEncoding();    
     trackID = theStep->GetTrack()->GetTrackID();
     parentID = theStep->GetTrack()->GetParentID();
@@ -113,24 +115,49 @@ void radSteppingAction::UserSteppingAction(const G4Step* theStep)
     preMomX  =  thePrePoint->GetMomentum().getX();
     preMomY  =  thePrePoint->GetMomentum().getY();
     preMomZ  =  thePrePoint->GetMomentum().getZ();
-
-    G4ThreeVector mom(preMomX,preMomY,preMomZ);
-    G4bool valid(false);
-    G4double theta(0);
-    if(material==1){
-      G4ThreeVector norm = G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetGlobalExitNormal(thePostPoint->GetPosition(),&valid);      
-      theta = norm.angle(mom.unit());
-    }
-    if(valid)
-      normCosAng = cos(theta);
     
-    neilVal = dmgCalc.getNEIL(pType,preKE,theta);
-    mremVal = dmgCalc.getMREM(pType,preKE,theta);
   }
+
+  if(theMaterial2){    
+    if(theMaterial2->GetName().compare("Galactic")==0)    material2=1;
+    else if(theMaterial2->GetName().compare("G4_W")==0 ||
+	    theMaterial2->GetName().compare("G4_Cu")==0 ||
+	    theMaterial2->GetName().compare("G4_POLYETHYLENE")==0 ||
+	    theMaterial2->GetName().compare("G4_Fe")==0 ||
+	    theMaterial2->GetName().compare("G4_Pb")==0){
+      material2=0;
+    }
+
+    std::string volNm = thePrePoint->GetTouchableHandle()->GetVolume()->GetName();
+    if(volNm.compare("detUS_PV")==0){
+      detID = 0;
+    }else if(volNm.compare("detDS_PV")==0){
+      detID = 1;
+    }else{
+      fillTree=0;
+    }
+
+    pType = particleType->GetPDGEncoding();    
+    trackID = theStep->GetTrack()->GetTrackID();
+    parentID = theStep->GetTrack()->GetParentID();
+  
+    preE  =  thePrePoint->GetTotalEnergy();
+    preKE = thePostPoint->GetKineticEnergy();
+
+    prePosX  =  thePrePoint->GetPosition().getX();
+    prePosY  =  thePrePoint->GetPosition().getY();
+    prePosZ  =  thePrePoint->GetPosition().getZ();
+    preMomX  =  thePrePoint->GetMomentum().getX();
+    preMomY  =  thePrePoint->GetMomentum().getY();
+    preMomZ  =  thePrePoint->GetMomentum().getZ();
+    
+  }
+
 
   if(fillTree){
     // G4cout<<" currentEv "<<eventNr
     // 	  <<"  "<<theMaterial->GetName()<<" "<<particleType->GetPDGEncoding()
+    //    <<"  "<<theMaterial2->GetName()<<" "<<particleType->GetPDGEncoding()
     // 	  <<" "<<thePrePoint->GetTouchableHandle()->GetVolume()->GetName()
     // 	  <<" "<<material<<G4endl;    
     // G4cout<<detID<<G4endl;
@@ -139,9 +166,10 @@ void radSteppingAction::UserSteppingAction(const G4Step* theStep)
   
 }
 
-void radSteppingAction::InitVar(){
+void mscSteppingAction::InitVar(){
   eventNr = -999;
   material = -999;
+  material2 = -999;
   pType = -999;
   trackID = -999;
   parentID = -999;
@@ -156,11 +184,6 @@ void radSteppingAction::InitVar(){
   preMomX  = -999;
   preMomY  = -999;
   preMomZ  = -999;
-
-  neilVal  = -999;
-  mremVal  = -999;
-
-  normCosAng = -999;
 }
 
 
