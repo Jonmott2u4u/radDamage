@@ -46,6 +46,7 @@ private:
   
   G4double  preE; // total energy
   G4double  preKE;// kinetic energy
+  G4double  preIE;// Initial kinetic energy (at US detector)
   
   G4double  prePosX; //position
   G4double  prePosY;

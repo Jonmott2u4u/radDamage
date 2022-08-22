@@ -129,7 +129,7 @@ G4VPhysicalVolume* mscDetectorConstruction::Construct()
   tgtVisAtt->SetForceSolid(true);
   tgtVisAtt->SetVisibility(true);
   tgtL->SetVisAttributes(tgtVisAtt);
-  new G4PVPlacement(0,G4ThreeVector(0,0,targetLen/2.),
+  new G4PVPlacement(0,G4ThreeVector(0,0,10*cm+targetLen/2.),
                  tgtL,             // its logical volume                     
                 "target",         // its name
                  worldLV,          // its mother  volume
@@ -154,7 +154,7 @@ G4VPhysicalVolume* mscDetectorConstruction::Construct()
  tgtVisAtt2->SetForceSolid(true);
  tgtVisAtt2->SetVisibility(true);
  tgtL2->SetVisAttributes(tgtVisAtt2);
- new G4PVPlacement(0,G4ThreeVector(0,0,targetLen+targetLen2/2.),
+ new G4PVPlacement(0,G4ThreeVector(0,0,10*cm+targetLen+targetLen2/2.),
                tgtL2,           // its logical volume
                "target2",       // its name
                worldLV,        // its mother volume
@@ -204,7 +204,7 @@ G4VPhysicalVolume* mscDetectorConstruction::Construct()
   detVisAtt->SetForceSolid(true);
   detVisAtt->SetVisibility(true);
   detUS_L->SetVisAttributes(detVisAtt);
-  new G4PVPlacement(0,G4ThreeVector(0,0,-0.5*cm),
+  new G4PVPlacement(0,G4ThreeVector(0,0,0.5*cm),
                  detUS_L,             // its logical volume                         
                  "detUS_PV",         // its name
                  worldLV,          // its mother  volume
@@ -223,7 +223,7 @@ G4VPhysicalVolume* mscDetectorConstruction::Construct()
                  vacuumMaterial,  // its material
                  "detDS_L");         // its name
   detDS_L->SetVisAttributes(detVisAtt);
-  new G4PVPlacement(0,G4ThreeVector(0,0,targetLen + targetLen2 + 0.5*cm),
+  new G4PVPlacement(0,G4ThreeVector(0,0,targetLen + targetLen2 + 10.5*cm),
                  detDS_L,             // its logical volume                         
                  "detDS_PV",         // its name
                  worldLV,          // its mother  volume

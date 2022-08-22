@@ -36,6 +36,7 @@ void  mscSteppingAction::InitOutput(){
   
   tout->Branch("preE",&preE,"preE/D");
   tout->Branch("preKE",&preKE,"preKE/D");
+  tout->Branch("preIE",&preIE,"preIE/D");
   
   tout->Branch("prePosX", &prePosX, "prePosX/D");
   tout->Branch("prePosY", &prePosY, "prePosY/D");
@@ -66,7 +67,7 @@ void mscSteppingAction::UserSteppingAction(const G4Step* theStep)
 
   //get materials
   G4Material* theMaterial = theTrack->GetMaterial();
-  G4Material* theMaterial2 = theTrack->GetMaterial();
+  //G4Material* theMaterial2 = theTrack->GetMaterial();
   G4ThreeVector _polarization=theTrack->GetPolarization();
   G4String _pn=thePostPoint->GetProcessDefinedStep()->GetProcessName();
 
@@ -96,6 +97,7 @@ void mscSteppingAction::UserSteppingAction(const G4Step* theStep)
     std::string volNm = thePrePoint->GetTouchableHandle()->GetVolume()->GetName();
     if(volNm.compare("detUS_PV")==0){
       detID = 0;
+      preIE = thePostPoint->GetKineticEnergy();
     }else if(volNm.compare("detDS_PV")==0){
       detID = 1;
     }else{
@@ -117,47 +119,11 @@ void mscSteppingAction::UserSteppingAction(const G4Step* theStep)
     preMomZ  =  thePrePoint->GetMomentum().getZ();
     
   }
-
-  if(theMaterial2){    
-    if(theMaterial2->GetName().compare("Galactic")==0)    material2=1;
-    else if(theMaterial2->GetName().compare("G4_W")==0 ||
-	    theMaterial2->GetName().compare("G4_Cu")==0 ||
-	    theMaterial2->GetName().compare("G4_POLYETHYLENE")==0 ||
-	    theMaterial2->GetName().compare("G4_Fe")==0 ||
-	    theMaterial2->GetName().compare("G4_Pb")==0){
-      material2=0;
-    }
-
-    std::string volNm = thePrePoint->GetTouchableHandle()->GetVolume()->GetName();
-    if(volNm.compare("detUS_PV")==0){
-      detID = 0;
-    }else if(volNm.compare("detDS_PV")==0){
-      detID = 1;
-    }else{
-      fillTree=0;
-    }
-
-    pType = particleType->GetPDGEncoding();    
-    trackID = theStep->GetTrack()->GetTrackID();
-    parentID = theStep->GetTrack()->GetParentID();
-  
-    preE  =  thePrePoint->GetTotalEnergy();
-    preKE = thePostPoint->GetKineticEnergy();
-
-    prePosX  =  thePrePoint->GetPosition().getX();
-    prePosY  =  thePrePoint->GetPosition().getY();
-    prePosZ  =  thePrePoint->GetPosition().getZ();
-    preMomX  =  thePrePoint->GetMomentum().getX();
-    preMomY  =  thePrePoint->GetMomentum().getY();
-    preMomZ  =  thePrePoint->GetMomentum().getZ();
-    
-  }
-
 
   if(fillTree){
     // G4cout<<" currentEv "<<eventNr
     // 	  <<"  "<<theMaterial->GetName()<<" "<<particleType->GetPDGEncoding()
-    //    <<"  "<<theMaterial2->GetName()<<" "<<particleType->GetPDGEncoding()
+    //    <<"  "<<theMaterial->GetName()<<" "<<particleType->GetPDGEncoding()
     // 	  <<" "<<thePrePoint->GetTouchableHandle()->GetVolume()->GetName()
     // 	  <<" "<<material<<G4endl;    
     // G4cout<<detID<<G4endl;
